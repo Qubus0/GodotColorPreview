@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://busnw0ulacpl8"]
+
+[node name="Picker" type="ColorPickerButton"]
+offset_right = 30.0
+offset_bottom = 31.0
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
