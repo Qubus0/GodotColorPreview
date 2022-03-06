@@ -1,7 +1,17 @@
-[gd_scene format=3 uid="uid://busnw0ulacpl8"]
+[gd_scene format=3 uid="uid://bd8slp7oko0my"]
 
-[node name="Picker" type="ColorPickerButton"]
-offset_right = 30.0
-offset_bottom = 31.0
-theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+[node name="Popup" type="Popup"]
+size = Vector2i(465, 775)
+min_size = Vector2i(465, 775)
+content_scale_mode = 1
+content_scale_aspect = 1
+content_scale_factor = 1.5
+
+[node name="ColorPicker" type="ColorPicker" parent="."]
+offset_left = 9.0
+offset_top = 9.0
+offset_right = 299.0
+offset_bottom = 506.0
+__meta__ = {
+"_edit_use_custom_anchors": false
+}
