@@ -160,6 +160,11 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	var padding = size / 6
 	icon_region.position += Vector2(padding, padding)
 	icon_region.size -= Vector2(padding, padding) * 2
+	var icon_corner_region = PackedVector2Array([
+		icon_region.end,
+		icon_region.end + Vector2(-icon_region.size.x / 2, 0.0),
+		icon_region.end + Vector2(0.0, -icon_region.size.y / 2)
+	])
 
 	var mouse_pos := current_textedit.get_local_mouse_pos()
 	var hovering := area.has_point(mouse_pos)
@@ -168,6 +173,7 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	# black is falsey, comparing to null allows us to preview it
 	if line_color != null:
 		current_textedit.draw_rect(icon_region, line_color)
+		current_textedit.draw_colored_polygon(icon_corner_region, Color(line_color, 1.0))
 		current_textedit.set_line_gutter_clickable(line, gutter_position, true)
 
 		if hovering:
