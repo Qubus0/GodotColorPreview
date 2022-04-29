@@ -158,8 +158,8 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	
 	# spacing the squares so they don't merge
 	var padding = size / 6
-	icon_region.position += Vector2(padding, padding)
-	icon_region.size -= Vector2(padding, padding) * 2
+	icon_region = icon_region.grow(-padding)
+	
 	var icon_corner_region = PackedVector2Array([
 		icon_region.end,
 		icon_region.end + Vector2(-icon_region.size.x / 2, 0.0),
@@ -171,9 +171,23 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	var line_color = get_line_color(current_textedit, line)
 
 	# black is falsey, comparing to null allows us to preview it
-	if line_color != null:
+	if line_color is Color:
+		line_color = line_color as Color
+		
+		if line_color.a < 1:	# transparent -> add checkered bg + no-alpha corner
+			current_textedit.draw_rect(icon_region, Color.WHITE)
+			current_textedit.draw_rect( Rect2(
+				Vector2(icon_region.position.x + icon_region.size.x/2, icon_region.position.y), 
+				icon_region.size/2
+			), Color.DIM_GRAY)
+			current_textedit.draw_rect( Rect2(
+				Vector2(icon_region.position.x, icon_region.position.y + icon_region.size.y/2), 
+				icon_region.size/2
+			), Color.DIM_GRAY)
+			
+			current_textedit.draw_colored_polygon(icon_corner_region, Color(line_color, 1.0))
+		
 		current_textedit.draw_rect(icon_region, line_color)
-		current_textedit.draw_colored_polygon(icon_corner_region, Color(line_color, 1.0))
 		current_textedit.set_line_gutter_clickable(line, gutter_position, true)
 
 		if hovering:
@@ -213,7 +227,7 @@ func set_line_color(textedit: TextEdit, line: int, color = null) -> void:
 
 func get_line_color(textedit: TextEdit, line: int):
 	var meta = textedit.get_line_gutter_metadata(line, gutter_position)
-	return meta if meta != null else null
+	return meta if meta is Color else null
 
 
 ### ### ### COLOR PICKER ### ### ###
