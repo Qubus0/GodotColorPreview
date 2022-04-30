@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bd8slp7oko0my"]
+[gd_scene format=3 uid="uid://dlhe1fiimv8if"]
 
 [node name="Popup" type="Popup"]
 size = Vector2i(465, 775)
@@ -8,10 +8,11 @@ content_scale_aspect = 1
 content_scale_factor = 1.5
 
 [node name="ColorPicker" type="ColorPicker" parent="."]
-offset_left = 9.0
-offset_top = 9.0
-offset_right = 299.0
-offset_bottom = 506.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 295.0
+offset_bottom = 502.0
+deferred_mode = true
 __meta__ = {
 "_edit_use_custom_anchors": false
 }
