@@ -70,11 +70,11 @@ func get_all_text_editors(parent : Node) -> void:
 
 			if child.is_connected("text_changed", text_changed):
 				child.disconnect("text_changed", text_changed)
-			child.connect("text_changed", text_changed, [child])
+			child.text_changed.connect(text_changed.bind(child))
 
 			if child.is_connected("caret_changed", caret_changed):
 				child.disconnect("caret_changed", caret_changed)
-			child.connect("caret_changed", caret_changed, [child])
+			child.caret_changed.connect(caret_changed.bind(child))
 
 
 func caret_changed(textedit: TextEdit) -> void:
@@ -88,7 +88,7 @@ func text_changed(textedit : TextEdit) -> void:
 func handle_change(textedit : TextEdit) -> void:
 	current_textedit = textedit
 	if not current_textedit.is_connected("gui_input", textedit_clicked):
-		current_textedit.connect("gui_input", textedit_clicked, [textedit])
+		current_textedit.gui_input.connect(textedit_clicked.bind(textedit))
 
 	var editor = get_editor_interface()
 	if not editors.has(textedit):
