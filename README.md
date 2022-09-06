@@ -2,14 +2,14 @@
 
 `! Note:` this plugin only works for Godot 4.x
 
-Made in 4.0.alpha3. Things may change and break with other Godot versions.
+Updated to 4.0.alpha15. Things may still break, older alphas may not be compatible right away.
 
-Now avalable on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
+Now available on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
 
 ## Installation
 1. In the Godot Editor, got to the `AssetLib` tab
-1. Search for 'Color Preview', select and <kbd>Download</kbd>
-1. Select only the `addons/ColorPreview` folder and <kbd>Install</kbd>
+1. Search for 'Color Preview', select and press <kbd>Download</kbd>
+1. Select only the `addons/ColorPreview` folder and press <kbd>Install</kbd>
 
 **Or**:
 
@@ -17,7 +17,7 @@ Now avalable on the Godot Asset Library: [Color Preview](https://godotengine.org
 1. Add the `ColorPreview/` directory and its contents to the `addons/` directory in your Godot project
 
 ## Enabling the addon
-Go to `Project > Project Settings... > Plugins` and <kbd>Enable</kbd>
+Go to `Project > Project Settings... > Plugins` and press <kbd>Enable</kbd>
 
 
 Once you have done this, every line containing a Color will have a preview left of the breakpoint gutter.
