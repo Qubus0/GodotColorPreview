@@ -11,8 +11,11 @@ var picker_popup: Popup
 
 
 func _enter_tree() -> void:
-	initialize_picker()
 	initialize_gutter()
+	initialize_picker()
+	# the shader editor does not exist until opened for the first time
+	# so, to get it consistently, check if it's there whenever the focus changes
+	get_viewport().gui_focus_changed.connect(get_shader_editor_code_edit)
 
 
 func _exit_tree() -> void:
@@ -26,7 +29,7 @@ func initialize_picker() -> void:
 		picker_popup.connect("popup_hide", on_picker_popup_close)
 	picker_popup.hide()
 	
-	var picker = picker_popup.get_node("ColorPicker")
+	var picker: ColorPicker = picker_popup.get_node("ColorPicker")
 	if not picker.is_connected("color_changed", picker_color_changed):
 		picker.connect("color_changed", picker_color_changed)
 
@@ -65,24 +68,30 @@ func get_all_text_editors(parent : Node) -> void:
 		if child.get_child_count():
 			get_all_text_editors(child)
 
-		if child is TextEdit:
-			editors.append(child)
-
-			if child.is_connected("text_changed", text_changed):
-				child.disconnect("text_changed", text_changed)
-			child.text_changed.connect(text_changed.bind(child))
-
-			if child.is_connected("caret_changed", caret_changed):
-				child.disconnect("caret_changed", caret_changed)
-			child.caret_changed.connect(caret_changed.bind(child))
-
-
-func caret_changed(textedit: TextEdit) -> void:
-	handle_change(textedit)
+		if child is CodeEdit:
+			add_code_edit_to_editors_array(child)
+			
+	
+func get_shader_editor_code_edit(node: Node):
+	if not node is CodeEdit or not node.get_parent().get_class() == "ShaderTextEditor":
+		return
+	
+	if not editors.has(node):
+		add_code_edit_to_editors_array(node)
+		initialize_gutter()
+		initialize_picker()
 
 
-func text_changed(textedit : TextEdit) -> void:
-	handle_change(textedit)
+func add_code_edit_to_editors_array(node: CodeEdit) -> void:
+	editors.append(node)
+
+	if node.is_connected("text_changed", handle_change):
+		node.disconnect("text_changed", handle_change)
+	node.text_changed.connect(handle_change.bind(node))
+
+	if node.is_connected("caret_changed", handle_change):
+		node.disconnect("caret_changed", handle_change)
+	node.caret_changed.connect(handle_change.bind(node))
 
 
 func handle_change(textedit : TextEdit) -> void:
@@ -98,8 +107,8 @@ func handle_change(textedit : TextEdit) -> void:
 
 
 func editor_script_changed(script: Script) -> void:
-	initialize_picker()
 	initialize_gutter()
+	initialize_picker()
 	if current_textedit:
 		if current_textedit.is_connected("gui_input", textedit_clicked):
 			current_textedit.disconnect("gui_input", textedit_clicked)
@@ -254,7 +263,17 @@ func on_picker_popup_close() -> void:
 	var text := current_textedit.get_line(hovering_line)
 	var color_match : RegExMatch = match_color_in_string(text)
 	var new_color = get_line_color(current_textedit, hovering_line)
-	text = text.replace(color_match.get_string(), "Color" + str(new_color))
+	
+	if color_from_regex_match(color_match) == new_color:
+		return # don't change if equal -> doesn't mess up constants, strings etc.
+	
+	if color_match.get_string('const'): # replace the whole color string
+		text = text.replace(color_match.get_string(), "Color" + str(new_color))
+		
+	else: # only replace inside parenthesis to cover Color(...) and vec4(...)
+		var color_string = str(new_color).replace("(", "").replace(")", "")
+		text = text.replace(color_match.get_string("params"), color_string)
+		
 	current_textedit.set_line(hovering_line, text)
 
 
@@ -315,10 +334,19 @@ func named_or_hex_color(string: String): # Color or null
 
 func match_color_in_string(string: String) -> RegExMatch:
 	var re = RegEx.new()
+	var color
+	
 	re.compile("Color\\((?<params>(?R)*.*?)\\)")
-	var color = re.search(string)
+	color = re.search(string)
 	if color != null:
 		return color
+	
 	re.compile("Color\\.(?<const>[A-Z_]+)\\b")
-	return re.search(string)
+	color = re.search(string)
+	if color != null:
+		return color
+	
+	re.compile("source_color.*?vec4\\((?<params>(?R)*.*?)\\)")
+	color = re.search(string)	
+	return color
 

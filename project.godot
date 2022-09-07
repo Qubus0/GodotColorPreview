@@ -18,6 +18,11 @@ config/icon="res://icon.png"
 
 enabled=PackedStringArray("res://addons/ColorPreview/plugin.cfg")
 
+[filesystem]
+
+import/blender/enabled=false
+import/fbx/enabled=false
+
 [physics]
 
 common/enable_pause_aware_picking=true

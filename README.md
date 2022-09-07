@@ -3,6 +3,7 @@
 `! Note:` this plugin only works for Godot 4.x
 
 Updated to 4.0.alpha15. Things may still break, older alphas may not be compatible right away.
+If something did break in a newer version, please open an issue.
 
 Now available on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
 
@@ -23,7 +24,8 @@ Go to `Project > Project Settings... > Plugins` and press <kbd>Enable</kbd>
 Once you have done this, every line containing a Color will have a preview left of the breakpoint gutter.
 Click any preview to open a color picker where you can edit the color directly.
 
-![Addon Preview](https://github.com/Qubus0/GodotColorPreview/blob/main/colors.png)
+![Color Preview in the main code editor](https://github.com/Qubus0/GodotColorPreview/blob/main/colors.png)
+![Color Preview in the shader editor](https://github.com/Qubus0/GodotColorPreview/blob/main/colors_shader.png)
 
 ***
 
