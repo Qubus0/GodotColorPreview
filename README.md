@@ -8,7 +8,7 @@ If something did break in a newer version, please open an issue.
 Now available on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
 
 ## Installation
-1. In the Godot Editor, got to the `AssetLib` tab
+1. In the Godot Editor, go to the `AssetLib` tab
 1. Search for 'Color Preview', select and press <kbd>Download</kbd>
 1. Select only the `addons/ColorPreview` folder and press <kbd>Install</kbd>
 
