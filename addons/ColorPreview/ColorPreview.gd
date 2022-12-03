@@ -288,7 +288,7 @@ func color_from_string(string: String): # Color or null
 
 func color_from_regex_match(regex_match: RegExMatch): # Color or null
 	var color_const = regex_match.get_string("const")
-	if color_const != null and Color.find_named_color(color_const) != -1:
+	if color_const != null and Color.from_string(color_const, Color(-1)).to_rgba32() != -1:
 		return Color(color_const)
 
 	var params = regex_match.get_string("params")
@@ -327,7 +327,7 @@ func color_from_regex_match(regex_match: RegExMatch): # Color or null
 
 func named_or_hex_color(string: String): # Color or null
 	string = string.trim_prefix("\"").trim_prefix("\'").trim_suffix("\"").trim_suffix("\'")
-	if string.is_valid_html_color() or Color.find_named_color(string) != -1:
+	if string.is_valid_html_color() or Color.from_string(string, Color(-1)).to_rgba32() != -1:
 		return Color(string)
 	return null
 
