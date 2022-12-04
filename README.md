@@ -2,8 +2,8 @@
 
 `! Note:` this plugin only works for Godot 4.x
 
-Updated to 4.0.alpha15. Things may still break, older alphas may not be compatible right away.
-If something did break in a newer version, please open an issue.
+Updated to 4.0.beta7. Things may still break on the way to release.
+If something did break in a newer version, please open an issue or a pull request.
 
 Now available on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
 
