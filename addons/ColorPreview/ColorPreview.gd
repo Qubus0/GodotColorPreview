@@ -25,7 +25,7 @@ func _exit_tree() -> void:
 
 func initialize_picker() -> void:
 	if not picker_popup:
-		picker_popup = preload("res://addons/ColorPreview/picker.tscn").instantiate()
+		picker_popup = preload("res://addons/ColorPreview/Picker.tscn").instantiate()
 		picker_popup.connect("popup_hide", on_picker_popup_close)
 	picker_popup.hide()
 	
