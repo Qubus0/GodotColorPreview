@@ -2,7 +2,7 @@
 
 `! Note:` this plugin only works for Godot 4.x
 
-Updated to 4.0.beta7. Things may still break on the way to release.
+Updated to 4.0.stable.
 If something did break in a newer version, please open an issue or a pull request.
 
 Now available on the Godot Asset Library: [Color Preview](https://godotengine.org/asset-library/asset/1252)
@@ -35,3 +35,11 @@ You are welcome to contribute to this project.
 Please read the [Contributing guidelines](https://github.com/Qubus0/GodotColorPreview/blob/main/CONTRIBUTING.md) for more details.
 
 If you find any bugs, have proposals or want to outline how to fix something without opening a Pull Request, feel free to [Open an Issue](https://github.com/Qubus0/GodotColorPreview/issues/new)
+
+***
+
+If you want to support me otherwise, you can star this repo, share it, or 
+
+<a href="https://www.buymeacoffee.com/SteenQ" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 144px !important;" >
+</a>
