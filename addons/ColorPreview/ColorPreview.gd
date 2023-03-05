@@ -24,18 +24,19 @@ func _exit_tree() -> void:
 
 
 func initialize_picker() -> void:
+	var editor_base := get_editor_interface().get_base_control()
 	if not picker_popup:
 		picker_popup = preload("res://addons/ColorPreview/Picker.tscn").instantiate()
+		picker_popup.get_node("%ColorPreviewPicker").theme = editor_base.theme
 		picker_popup.connect("popup_hide", on_picker_popup_close)
 	picker_popup.hide()
-	
-	var picker: ColorPicker = picker_popup.get_node("ColorPicker")
+
+	var picker: ColorPicker = picker_popup.get_node("%ColorPreviewPicker")
 	if not picker.is_connected("color_changed", picker_color_changed):
 		picker.connect("color_changed", picker_color_changed)
 
-	var editor := get_editor_interface()
-	if not picker_popup.is_inside_tree() or not editor.has_node(picker_popup.get_path()):
-		editor.add_child(picker_popup)
+	if not picker_popup.is_inside_tree() or not editor_base.has_node(picker_popup.get_path()):
+		editor_base.add_child(picker_popup)
 
 
 func exit_picker() -> void:
@@ -70,12 +71,12 @@ func get_all_text_editors(parent : Node) -> void:
 
 		if child is CodeEdit:
 			add_code_edit_to_editors_array(child)
-			
-	
+
+
 func get_shader_editor_code_edit(node: Node):
 	if not node is CodeEdit or not node.get_parent().get_class() == "ShaderTextEditor":
 		return
-	
+
 	if not editors.has(node):
 		add_code_edit_to_editors_array(node)
 		initialize_gutter()
@@ -153,8 +154,8 @@ func remove_color_gutter(textedit: TextEdit) -> void:
 func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	if not current_textedit or line > current_textedit.get_line_count() - 1:
 		return
-		
-	var size: int 
+
+	var size: int
 	var offset := Vector2.ZERO
 	# centering the preview square in the line because perfectionism
 	if area.size.x < area.size.y:
@@ -164,11 +165,11 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 		size = area.size.y
 		offset = Vector2((area.size.x - area.size.y) /2, 0)
 	var icon_region := Rect2(area.position + offset, Vector2(size, size))
-	
+
 	# spacing the squares so they don't merge
 	var padding = size / 6
 	icon_region = icon_region.grow(-padding)
-	
+
 	var icon_corner_region = PackedVector2Array([
 		icon_region.end,
 		icon_region.end + Vector2(-icon_region.size.x / 2, 0.0),
@@ -182,20 +183,20 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	# black is falsey, comparing to null allows us to preview it
 	if line_color is Color:
 		line_color = line_color as Color
-		
+
 		if line_color.a < 1:	# transparent -> add checkered bg + no-alpha corner
 			current_textedit.draw_rect(icon_region, Color.WHITE)
 			current_textedit.draw_rect( Rect2(
-				Vector2(icon_region.position.x + icon_region.size.x/2, icon_region.position.y), 
+				Vector2(icon_region.position.x + icon_region.size.x/2, icon_region.position.y),
 				icon_region.size/2
 			), Color.DIM_GRAY)
 			current_textedit.draw_rect( Rect2(
-				Vector2(icon_region.position.x, icon_region.position.y + icon_region.size.y/2), 
+				Vector2(icon_region.position.x, icon_region.position.y + icon_region.size.y/2),
 				icon_region.size/2
 			), Color.DIM_GRAY)
-			
+
 			current_textedit.draw_colored_polygon(icon_corner_region, Color(line_color, 1.0))
-		
+
 		current_textedit.draw_rect(icon_region, line_color)
 		current_textedit.set_line_gutter_clickable(line, gutter_position, true)
 
@@ -247,8 +248,8 @@ func textedit_clicked(event: InputEvent, textedit: TextEdit) -> void:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				var color = get_line_color(textedit, hovering_line)
 				if color != null:
-					picker_popup.get_node("ColorPicker").color = color
-					picker_popup.position = event.global_position
+					picker_popup.get_node("%ColorPreviewPicker").color = color
+					picker_popup.position = event.global_position + Vector2(20, 0)
 					picker_popup.popup()
 
 
@@ -263,17 +264,17 @@ func on_picker_popup_close() -> void:
 	var text := current_textedit.get_line(hovering_line)
 	var color_match : RegExMatch = match_color_in_string(text)
 	var new_color = get_line_color(current_textedit, hovering_line)
-	
+
 	if color_from_regex_match(color_match) == new_color:
 		return # don't change if equal -> doesn't mess up constants, strings etc.
-	
+
 	if color_match.get_string('const'): # replace the whole color string
 		text = text.replace(color_match.get_string(), "Color" + str(new_color))
-		
+
 	else: # only replace inside parenthesis to cover Color(...) and vec4(...)
 		var color_string = str(new_color).replace("(", "").replace(")", "")
 		text = text.replace(color_match.get_string("params"), color_string)
-		
+
 	current_textedit.set_line(hovering_line, text)
 
 
@@ -335,18 +336,18 @@ func named_or_hex_color(string: String): # Color or null
 func match_color_in_string(string: String) -> RegExMatch:
 	var re = RegEx.new()
 	var color
-	
+
 	re.compile("Color\\((?<params>(?R)*.*?)\\)")
 	color = re.search(string)
 	if color != null:
 		return color
-	
+
 	re.compile("Color\\.(?<const>[A-Z_]+)\\b")
 	color = re.search(string)
 	if color != null:
 		return color
-	
+
 	re.compile("source_color.*?vec4\\((?<params>(?R)*.*?)\\)")
-	color = re.search(string)	
+	color = re.search(string)
 	return color
 
