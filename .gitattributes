@@ -1,0 +1,7 @@
+
+** export-ignore
+
+/addons !export-ignore
+/addons/** !export-ignore
+colors_demo.gd !export-ignore
+colors_demo.gdshader !export-ignore
