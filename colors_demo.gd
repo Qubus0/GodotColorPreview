@@ -8,6 +8,8 @@ func show_off_all_the_pretty_colors():
 	Color("gold")								# named colors
 	Color('aqua')								# different quotes
 	Color.DEEP_SKY_BLUE							# named with constants
+	Color(1, 1, 1, 1)
+	Color.WHITE 
 	Color(Color.DEEP_SKY_BLUE, 0.6)				# and alpha
 	Color(1, 0.2, 0.5)							# rgb
 	Color(1, 0.2, 0.5, 0.6)						# rgba

@@ -8,6 +8,12 @@ var hovering_line = null
 var gutter_position: int = 0
 var preview_gutter_name: String = "color_preview"
 var picker_popup: Popup
+var regex: RegEx
+const regex_strings := [
+	"Color\\((?<color_params>(?R)*.*?)\\)",
+	"Color\\.(?<color_const>[A-Z_]+)\\b",
+	"source_color.*?vec4\\((?<vec4_params>(?R)*.*?)\\)",
+	]
 
 
 func _enter_tree() -> void:
@@ -16,6 +22,9 @@ func _enter_tree() -> void:
 	# the shader editor does not exist until opened for the first time
 	# so, to get it consistently, check if it's there whenever the focus changes
 	get_viewport().gui_focus_changed.connect(get_shader_editor_code_edit)
+
+	regex = RegEx.new()
+	regex.compile("|".join(regex_strings))
 
 
 func _exit_tree() -> void:
@@ -262,18 +271,21 @@ func on_picker_popup_close() -> void:
 	if not hovering_line:
 		return
 	var text := current_textedit.get_line(hovering_line)
-	var color_match : RegExMatch = match_color_in_string(text)
+	var color_match : RegExMatch = regex.search(text)
 	var new_color = get_line_color(current_textedit, hovering_line)
 
 	if color_from_regex_match(color_match) == new_color:
 		return # don't change if equal -> doesn't mess up constants, strings etc.
 
-	if color_match.get_string('const'): # replace the whole color string
+	if color_match.get_string("color_const"): # replace the whole color string
 		text = text.replace(color_match.get_string(), "Color" + str(new_color))
 
 	else: # only replace inside parenthesis to cover Color(...) and vec4(...)
 		var color_string = str(new_color).replace("(", "").replace(")", "")
-		text = text.replace(color_match.get_string("params"), color_string)
+		var params := color_match.get_string("color_params")
+		if params == "":
+			params = color_match.get_string("vec4_params")
+		text = text.replace(params, color_string)
 
 	current_textedit.set_line(hovering_line, text)
 
@@ -281,18 +293,23 @@ func on_picker_popup_close() -> void:
 ### ### ### COLOR INTERPRETATION ### ### ###
 
 func color_from_string(string: String): # Color or null
-	var color_match = match_color_in_string(string)
+	var color_match = regex.search(string)
 	if !color_match:
 		return null
 	return color_from_regex_match(color_match)
 
 
 func color_from_regex_match(regex_match: RegExMatch): # Color or null
-	var color_const = regex_match.get_string("const")
-	if color_const != null and Color.from_string(color_const, Color(-1)) != Color(-1):
-		return Color(color_const)
+	var color_const := regex_match.get_string("color_const")
+	if color_const != "":
+		var color := Color.from_string(color_const, Color(-1))
+		if color != Color(-1):
+			return color
 
-	var params = regex_match.get_string("params")
+	var params := regex_match.get_string("color_params")
+	if params == "":
+		params = regex_match.get_string("vec4_params")
+
 	if not "," in params:
 		var color = color_from_string(params)
 		if color != null:
@@ -301,22 +318,22 @@ func color_from_regex_match(regex_match: RegExMatch): # Color or null
 		if color != null:
 			return color
 
-	var parameters = params.split(",")
-	match len(parameters):
-		2:
+	var parameters := params.split(",")
+	var parameter_count := parameters.size()
+	if parameter_count == 2:
 			var color = color_from_string(parameters[0])
 			if color != null:
 				return Color(color, parameters[1].to_float())
 			color = named_or_hex_color(parameters[0])
 			if color != null:
 				return Color(color , parameters[1].to_float())
-		3:
+	elif parameter_count == 3:
 			return Color(
 				parameters[0].to_float(),
 				parameters[1].to_float(),
 				parameters[2].to_float(),
 			)
-		4:
+	elif parameter_count == 4:
 			return Color(
 				parameters[0].to_float(),
 				parameters[1].to_float(),
@@ -328,26 +345,10 @@ func color_from_regex_match(regex_match: RegExMatch): # Color or null
 
 func named_or_hex_color(string: String): # Color or null
 	string = string.trim_prefix("\"").trim_prefix("\'").trim_suffix("\"").trim_suffix("\'")
-	if string.is_valid_html_color() or Color.from_string(string, Color(-1)) != Color(-1):
+	if string.is_valid_html_color():
 		return Color(string)
+
+	var color := Color.from_string(string, Color(-1))
+	if color != Color(-1):
+		return color
 	return null
-
-
-func match_color_in_string(string: String) -> RegExMatch:
-	var re = RegEx.new()
-	var color
-
-	re.compile("Color\\((?<params>(?R)*.*?)\\)")
-	color = re.search(string)
-	if color != null:
-		return color
-
-	re.compile("Color\\.(?<const>[A-Z_]+)\\b")
-	color = re.search(string)
-	if color != null:
-		return color
-
-	re.compile("source_color.*?vec4\\((?<params>(?R)*.*?)\\)")
-	color = re.search(string)
-	return color
-
