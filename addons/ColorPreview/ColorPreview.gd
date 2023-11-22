@@ -9,11 +9,11 @@ var gutter_position: int = 0
 var preview_gutter_name: String = "color_preview"
 var picker_popup: Popup
 var regex: RegEx
-const regex_strings := [
+const regex_patterns: Array[String] = [
 	"Color\\((?<color_params>(?R)*.*?)\\)",
 	"Color\\.(?<color_const>[A-Z_]+)\\b",
 	"source_color.*?vec4\\((?<vec4_params>(?R)*.*?)\\)",
-	]
+]
 
 
 func _enter_tree() -> void:
@@ -24,7 +24,7 @@ func _enter_tree() -> void:
 	get_viewport().gui_focus_changed.connect(get_shader_editor_code_edit)
 
 	regex = RegEx.new()
-	regex.compile("|".join(regex_strings))
+	regex.compile("|".join(regex_patterns))
 
 
 func _exit_tree() -> void:
@@ -40,7 +40,7 @@ func initialize_picker() -> void:
 		picker_popup.connect("popup_hide", on_picker_popup_close)
 	picker_popup.hide()
 
-	var picker: ColorPicker = picker_popup.get_node("%ColorPreviewPicker")
+	var picker := (picker_popup.get_node("%ColorPreviewPicker") as ColorPicker)
 	if not picker.is_connected("color_changed", picker_color_changed):
 		picker.connect("color_changed", picker_color_changed)
 
@@ -109,7 +109,7 @@ func handle_change(textedit : TextEdit) -> void:
 	if not current_textedit.is_connected("gui_input", textedit_clicked):
 		current_textedit.gui_input.connect(textedit_clicked.bind(textedit))
 
-	var editor = get_editor_interface()
+	var editor := get_editor_interface()
 	if not editors.has(textedit):
 		editors.clear()
 		get_all_text_editors(editor.get_script_editor())
@@ -123,7 +123,7 @@ func editor_script_changed(script: Script) -> void:
 		if current_textedit.is_connected("gui_input", textedit_clicked):
 			current_textedit.disconnect("gui_input", textedit_clicked)
 		current_textedit = null
-	var editor = get_editor_interface()
+	var editor := get_editor_interface()
 	var script_editor = editor.get_script_editor()
 	editors.clear()
 	get_all_text_editors(script_editor)
@@ -179,7 +179,7 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 	var padding = size / 6
 	icon_region = icon_region.grow(-padding)
 
-	var icon_corner_region = PackedVector2Array([
+	var icon_corner_region := PackedVector2Array([
 		icon_region.end,
 		icon_region.end + Vector2(-icon_region.size.x / 2, 0.0),
 		icon_region.end + Vector2(0.0, -icon_region.size.y / 2)
@@ -224,7 +224,7 @@ func gutter_draw_color_preview(line: int, gutter: int, area: Rect2) -> void:
 
 
 func get_colors_from_textedit(textedit: TextEdit) -> void:
-	var all_lines = textedit.text.split("\n")
+	var all_lines := textedit.text.split("\n")
 	var has_color := false
 
 	for line_index in len(all_lines):
@@ -255,7 +255,7 @@ func textedit_clicked(event: InputEvent, textedit: TextEdit) -> void:
 	if hovering_line != null:
 		if event is InputEventMouseButton:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-				var color = get_line_color(textedit, hovering_line)
+				var color: Color = get_line_color(textedit, hovering_line)
 				if color != null:
 					picker_popup.get_node("%ColorPreviewPicker").color = color
 					picker_popup.position = event.global_position + Vector2(20, 0)
@@ -271,7 +271,7 @@ func on_picker_popup_close() -> void:
 	if not hovering_line:
 		return
 	var text := current_textedit.get_line(hovering_line)
-	var color_match : RegExMatch = regex.search(text)
+	var color_match := regex.search(text)
 	var new_color = get_line_color(current_textedit, hovering_line)
 
 	if color_from_regex_match(color_match) == new_color:
@@ -281,7 +281,7 @@ func on_picker_popup_close() -> void:
 		text = text.replace(color_match.get_string(), "Color" + str(new_color))
 
 	else: # only replace inside parenthesis to cover Color(...) and vec4(...)
-		var color_string = str(new_color).replace("(", "").replace(")", "")
+		var color_string := str(new_color).replace("(", "").replace(")", "")
 		var params := color_match.get_string("color_params")
 		if params == "":
 			params = color_match.get_string("vec4_params")
@@ -293,7 +293,7 @@ func on_picker_popup_close() -> void:
 ### ### ### COLOR INTERPRETATION ### ### ###
 
 func color_from_string(string: String): # Color or null
-	var color_match = regex.search(string)
+	var color_match := regex.search(string)
 	if !color_match:
 		return null
 	return color_from_regex_match(color_match)
@@ -301,10 +301,8 @@ func color_from_string(string: String): # Color or null
 
 func color_from_regex_match(regex_match: RegExMatch): # Color or null
 	var color_const := regex_match.get_string("color_const")
-	if color_const != "":
-		var color := Color.from_string(color_const, Color(-1))
-		if color != Color(-1):
-			return color
+	if ColorHelper.is_named_color(color_const):
+		return Color(color_const)
 
 	var params := regex_match.get_string("color_params")
 	if params == "":
@@ -345,10 +343,11 @@ func color_from_regex_match(regex_match: RegExMatch): # Color or null
 
 func named_or_hex_color(string: String): # Color or null
 	string = string.trim_prefix("\"").trim_prefix("\'").trim_suffix("\"").trim_suffix("\'")
-	if string.is_valid_html_color():
+	if string.is_valid_html_color() or ColorHelper.is_named_color(string):
 		return Color(string)
-
-	var color := Color.from_string(string, Color(-1))
-	if color != Color(-1):
-		return color
 	return null
+
+
+
+
+
